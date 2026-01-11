@@ -1,0 +1,16 @@
+#!/bin/bash
+#ddev-description: Reinitialize AI Task Manager for Codex
+
+set -e
+
+echo "Reinitializing AI Task Manager for Codex..."
+
+# Remove existing AI Task Manager if it exists
+if [ -d ".ai/task-manager" ]; then
+    echo "Found existing AI Task Manager configuration"
+fi
+
+# Initialize AI Task Manager
+npx @e0ipso/ai-task-manager init --assistant=codex
+
+echo "✓ AI Task Manager reinitialized for Codex"
