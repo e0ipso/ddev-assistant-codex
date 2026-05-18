@@ -1,5 +1,6 @@
 # Test artifacts
 test_env/
+node_modules/
 
 # DDEV generated files that should not be committed
 .ddev/
