@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADDON_CONFIG="$SCRIPT_DIR/../mcp/config.json"
 PROJECT_CONFIG=".ddev/mcp-config/codex.json"
 
-echo "Configuring MCP servers for Claude..."
+echo "Configuring MCP servers for Codex..."
 
 # Function to add an MCP server
 add_mcp_server() {

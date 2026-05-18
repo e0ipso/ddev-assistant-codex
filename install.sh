@@ -1,9 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "Installing ddev-assistant-codex addon..."
+echo "Installing ddev-assistant-codex add-on..."
 
-# Source the addon helper scripts
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Install CLI tool
@@ -18,7 +17,7 @@ bash "$SCRIPT_DIR/src/setup-ai-task-manager.sh"
 echo "Step 3: Configuring MCP servers..."
 bash "$SCRIPT_DIR/src/setup-mcp-servers.sh"
 
-echo "✓ ddev-assistant-codex addon installation complete!"
+echo "✓ ddev-assistant-codex add-on installation complete!"
 echo ""
 echo "Verify installation with:"
 echo "  ddev exec codex --version"

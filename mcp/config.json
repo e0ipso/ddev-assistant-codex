@@ -12,5 +12,5 @@
       }
     }
   ],
-  "extends_from": ".ddev/mcp-config/claude.json"
+  "extends_from": ".ddev/mcp-config/codex.json"
 }

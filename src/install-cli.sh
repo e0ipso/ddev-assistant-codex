@@ -2,8 +2,8 @@
 set -e
 
 # Check if Codex is already installed
-if command -v claude &> /dev/null; then
-    echo "Codex is already installed: $(claude --version)"
+if command -v codex &> /dev/null; then
+    echo "Codex is already installed: $(codex --version)"
     exit 0
 fi
 
@@ -12,8 +12,8 @@ echo "Installing @openai/codex..."
 npm install -g @openai/codex
 
 # Verify installation
-if command -v claude &> /dev/null; then
-    echo "✓ Codex installed successfully: $(claude --version)"
+if command -v codex &> /dev/null; then
+    echo "✓ Codex installed successfully: $(codex --version)"
 else
     echo "✗ Failed to install Codex CLI"
     exit 1

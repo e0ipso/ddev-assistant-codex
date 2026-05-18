@@ -1,0 +1,12 @@
+# Test artifacts
+test_env/
+
+# DDEV generated files that should not be committed
+.ddev/
+
+# IDE
+.idea/
+.vscode/
+
+# OS files
+.DS_Store

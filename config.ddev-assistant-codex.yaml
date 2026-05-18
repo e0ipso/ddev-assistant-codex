@@ -1,0 +1,15 @@
+#ddev-generated
+hooks:
+  pre-start:
+    # Ensure host-side Codex paths exist so Docker bind-mounts them as the
+    # correct type (file vs directory). If a file does not exist, Docker would
+    # create a directory at that path instead, breaking the mount.
+    - exec-host: "mkdir -p ~/.codex"
+  post-start:
+    # Fix ownership of bind-mounted directories — Docker creates the parent
+    # directory as root, which prevents Codex from writing to it.
+    - exec: "[ -d ~/.codex ] && sudo chown $(id -u):$(id -g) ~/.codex || true"
+
+web_environment:
+  - CODEX_CONFIG_DIR=$HOME/.codex
+  - AI_TASK_MANAGER_ASSISTANT=codex

@@ -16,7 +16,7 @@ setup() {
   set -eu -o pipefail
 
   # Override this variable for your add-on:
-  export GITHUB_REPO=ddev/ddev-addon-template
+  export GITHUB_REPO=e0ipso/ddev-assistant-codex
 
   TEST_BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
   export BATS_LIB_PATH="${BATS_LIB_PATH}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
@@ -39,17 +39,19 @@ setup() {
 }
 
 health_checks() {
-  # Do something useful here that verifies the add-on
-
-  # You can check for specific information in headers:
-  # run curl -sfI https://${PROJNAME}.ddev.site
-  # assert_output --partial "HTTP/2 200"
-  # assert_output --partial "test_header"
-
-  # Or check if some command gives expected output:
-  DDEV_DEBUG=true run ddev launch
+  # Verify Codex is installed at /usr/local/bin and is executable
+  run ddev exec "test -f /usr/local/bin/codex"
   assert_success
-  assert_output --partial "FULLURL https://${PROJNAME}.ddev.site"
+
+  # Verify codex is accessible and on PATH
+  run ddev exec "codex --version"
+  assert_success
+
+  # Verify mounted config directory is owned by the web user (not root)
+  run ddev exec "stat -c '%U' ~/.codex"
+  assert_success
+  refute_output "root"
+
 }
 
 teardown() {

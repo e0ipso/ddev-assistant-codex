@@ -10,7 +10,7 @@ ddev add-ons install ddev-assistant-codex
 
 ## What This Addon Does
 
-- Installs @openai/codex CLI (`@anthropic-ai/codex`)
+- Installs @openai/codex CLI
 - Initializes AI Task Manager for Codex
 - Configures MCP servers (Puppeteer by default)
 - Fixes configuration directory ownership
@@ -56,7 +56,7 @@ ddev exec which codex
 
 ### AI Task Manager not initialized
 ```bash
-ddev exec ddev codex-init
+ddev codex-init
 ```
 
 ### MCP servers not configured
