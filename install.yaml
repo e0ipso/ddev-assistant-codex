@@ -4,7 +4,6 @@ project_files:
   - web-build/Dockerfile.ddev-assistant-codex
   - config.ddev-assistant-codex.yaml
   - docker-compose.ddev-assistant-codex.yaml
-  - commands/web/codex-init
 
 post_install_actions:
   - echo "Please run 'ddev restart' to build the new configuration."

@@ -7,7 +7,10 @@ FROM $BASE_IMAGE
 # hook to copy it into the home directory (which is a Docker named volume
 # and would be masked by bind mounts under ~/.local/).
 RUN npm install -g @openai/codex && \
-    cp -L "$(which codex)" /usr/local/bin/codex && \
+    CODEX_BIN=$(which codex) && \
+    if [ "$CODEX_BIN" != "/usr/local/bin/codex" ]; then \
+        cp -L "$CODEX_BIN" /usr/local/bin/codex; \
+    fi && \
     chmod 755 /usr/local/bin/codex
 
 # Also add ~/.local/bin to PATH for non-interactive shells (ddev exec).

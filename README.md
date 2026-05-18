@@ -1,6 +1,6 @@
 # ddev-assistant-codex
 
-DDEV addon for @openai/codex assistant with AI Task Manager integration and MCP server support.
+DDEV addon for @openai/codex assistant with MCP server support.
 
 ## Installation
 
@@ -11,7 +11,6 @@ ddev add-ons install ddev-assistant-codex
 ## What This Addon Does
 
 - Installs @openai/codex CLI
-- Initializes AI Task Manager for Codex
 - Configures MCP servers (Puppeteer by default)
 - Fixes configuration directory ownership
 
@@ -21,7 +20,6 @@ After installation, verify the setup:
 
 ```bash
 ddev exec codex --version
-ddev exec ls -la .ai/task-manager/
 ddev exec codex mcp list
 ```
 
@@ -54,11 +52,6 @@ ddev restart
 ddev exec which codex
 ```
 
-### AI Task Manager not initialized
-```bash
-ddev codex-init
-```
-
 ### MCP servers not configured
 ```bash
 ddev exec codex mcp list
@@ -67,5 +60,4 @@ ddev exec codex mcp list
 ## Documentation
 
 - [@openai/codex](https://code.codex.com/)
-- [AI Task Manager](https://mateuaguilo.com/ai-task-manager/)
 - [DDEV Addons](https://docs.ddev.com/en/stable/users/extend/creating-add-ons/)
