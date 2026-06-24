@@ -9,9 +9,8 @@ FROM $BASE_IMAGE
 RUN npm install -g @openai/codex && \
     CODEX_BIN=$(which codex) && \
     if [ "$CODEX_BIN" != "/usr/local/bin/codex" ]; then \
-        cp -L "$CODEX_BIN" /usr/local/bin/codex; \
-    fi && \
-    chmod 755 /usr/local/bin/codex
+        ln -sf "$CODEX_BIN" /usr/local/bin/codex; \
+    fi
 
 # Also add ~/.local/bin to PATH for non-interactive shells (ddev exec).
 # ddev exec uses non-login bash (BASH_ENV=/etc/bash.nointeractive.bashrc),
