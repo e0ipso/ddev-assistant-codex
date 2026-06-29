@@ -1,10 +1,6 @@
 #ddev-generated
-# Mount the host Codex CLI configuration as a read-only seed. The post-start
-# hook copies missing files into a writable runtime ~/.codex directory so Codex
-# can refresh tokens and update in-container config without mutating the host
-# files or being blocked by a read-only bind mount.
-# The pre-start hook in config.ddev-assistant-codex.yaml ensures host seed paths
-# exist as the correct type before Docker attempts to bind-mount them.
+# Mount host Codex config read-only into the seed directory. The post-start hook
+# mirrors it into the writable ~/.codex runtime directory on every start.
 services:
   web:
     volumes:

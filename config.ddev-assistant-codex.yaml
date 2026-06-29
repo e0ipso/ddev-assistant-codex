@@ -1,29 +1,21 @@
 #ddev-generated
 hooks:
   pre-start:
-    # Ensure host-side Codex seed paths exist so Docker bind-mounts them as the
-    # correct type. If a file path is missing, Docker would create a directory
-    # at that path instead, breaking the seed.
-    - exec-host: >-
-        mkdir -p ~/.codex &&
-        if [ -e ~/.codex/auth.json ] && [ ! -f ~/.codex/auth.json ]; then
-          echo "~/.codex/auth.json exists but is not a file" >&2;
-          exit 1;
-        fi &&
-        [ -f ~/.codex/auth.json ] || : > ~/.codex/auth.json
+    # Ensure host-side Codex config exists before Docker bind-mounts it.
+    - exec-host: "mkdir -p ~/.codex"
   post-start:
-    # Seed host Codex config into a writable runtime config directory without
-    # overwriting files that Codex has already changed inside the container.
-    - exec: >-
-        mkdir -p "$HOME/.codex" &&
-        if [ -d "$HOME/.cred-seed/codex" ]; then
-          cp -Rn "$HOME/.cred-seed/codex/." "$HOME/.codex/";
-        fi &&
-        sudo chown -R "$(id -u):$(id -g)" "$HOME/.codex" &&
-        if [ -f "$HOME/.codex/auth.json" ]; then
-          chmod 600 "$HOME/.codex/auth.json";
+    # Mirror the read-only host seed into the writable runtime config directory on
+    # every start. Host config is authoritative, so stale container-only files are
+    # removed before copying.
+    - exec: |
+        set -eu
+        seed_dir="${HOME}/.cred-seed/codex"
+        target_dir="${HOME}/.codex"
+        if [ -d "${seed_dir}" ]; then
+          sudo rm -rf "${target_dir}"
+          mkdir -p "${target_dir}"
+          cp -R -P "${seed_dir}/." "${target_dir}/"
+          sudo chown -R "$(id -u):$(id -g)" "${target_dir}"
+          chmod 700 "${target_dir}"
+          [ ! -f "${target_dir}/auth.json" ] || chmod 600 "${target_dir}/auth.json"
         fi
-
-web_environment:
-  - CODEX_CONFIG_DIR=$HOME/.codex
-  - AI_TASK_MANAGER_ASSISTANT=codex

@@ -11,12 +11,3 @@ RUN npm install -g @openai/codex && \
     if [ "$CODEX_BIN" != "/usr/local/bin/codex" ]; then \
         ln -sf "$CODEX_BIN" /usr/local/bin/codex; \
     fi
-
-# Also add ~/.local/bin to PATH for non-interactive shells (ddev exec).
-# ddev exec uses non-login bash (BASH_ENV=/etc/bash.nointeractive.bashrc),
-# which sources /etc/bashrc/*.bashrc — not /etc/profile.d/.
-# We drop a file into /etc/bashrc/ so that our PATH addition is picked up
-# alongside DDEV's own entries (e.g. vendor/bin for drush).
-RUN mkdir -p /etc/bashrc && \
-    printf 'export PATH="$HOME/.local/bin:$PATH"\n' \
-    > /etc/bashrc/assistant-codex.bashrc

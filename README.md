@@ -1,6 +1,6 @@
 # ddev-assistant-codex
 
-DDEV addon for @openai/codex assistant with MCP server support.
+DDEV add-on for running the @openai/codex CLI inside DDEV web containers.
 
 ## Installation
 
@@ -10,9 +10,9 @@ ddev add-ons install ddev-assistant-codex
 
 ## What This Addon Does
 
-- Installs @openai/codex CLI
-- Configures MCP servers (Puppeteer by default)
-- Seeds host Codex config into a writable container runtime directory
+- Installs @openai/codex into the container at `/usr/local/bin/codex`
+- Makes `codex` available on `$PATH` for `ddev ssh` and `ddev exec`
+- Mirrors host Codex config into a writable container runtime directory on start
 
 ## Quick Start
 
@@ -20,7 +20,6 @@ After installation, verify the setup:
 
 ```bash
 ddev exec codex --version
-ddev exec codex mcp list
 ```
 
 ## Configuration
@@ -28,33 +27,13 @@ ddev exec codex mcp list
 ### Codex Credentials And Runtime Config
 
 The add-on mounts your host `~/.codex` directory into the web container as a
-read-only seed at `~/.cred-seed/codex`. During container startup, missing files
-from that seed are copied into the writable runtime config directory at
-`~/.codex`, and `CODEX_CONFIG_DIR` points Codex there.
+read-only seed at `~/.cred-seed/codex`. During every container startup, that
+seed is mirrored into the writable runtime config directory at `~/.codex`.
 
-This lets Codex start from your host credentials and settings while still
-allowing in-container token refreshes and config changes. Runtime files can
-drift from the host after startup. The seed is copied again only for missing
-files or fresh runtime state, so existing runtime changes are not overwritten.
-
-### Custom MCP Servers
-
-To add custom MCP servers, create `.ddev/mcp-config/codex.json`:
-
-```json
-{
-  "mcp_servers": [
-    {
-      "name": "my-server",
-      "enabled": true,
-      "command": "npx -y @myorg/my-mcp-server",
-      "environment": {
-        "ENV_VAR": "value"
-      }
-    }
-  ]
-}
-```
+Your host config is authoritative. Container-only changes under `~/.codex` are
+removed on restart, then replaced with a fresh copy of the host seed. Configure
+Codex features such as MCP servers on the host; this add-on mirrors the resulting
+host `~/.codex` config into the DDEV container.
 
 ## Troubleshooting
 
@@ -62,11 +41,6 @@ To add custom MCP servers, create `.ddev/mcp-config/codex.json`:
 ```bash
 ddev restart
 ddev exec which codex
-```
-
-### MCP servers not configured
-```bash
-ddev exec codex mcp list
 ```
 
 ## Documentation

@@ -19,7 +19,7 @@ setup() {
   export GITHUB_REPO=e0ipso/ddev-assistant-codex
 
   TEST_BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
-  export BATS_LIB_PATH="${BATS_LIB_PATH}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
+  export BATS_LIB_PATH="${BATS_LIB_PATH:-}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
   bats_load_library bats-assert
   bats_load_library bats-file
   bats_load_library bats-support
@@ -28,6 +28,10 @@ setup() {
   export PROJNAME="test-$(basename "${GITHUB_REPO}")"
   mkdir -p "${HOME}/tmp"
   export TESTDIR="$(mktemp -d "${HOME}/tmp/${PROJNAME}.XXXXXX")"
+  export TEST_MARKER="$(basename "${TESTDIR}")"
+  export TEST_HOST_CODEX_MARKER="${HOME}/.codex/${TEST_MARKER}.txt"
+  export TEST_HOST_CODEX_AUTH="${HOME}/.codex/auth.json"
+  export TEST_CREATED_CODEX_AUTH=false
   export DDEV_NONINTERACTIVE=true
   export DDEV_NO_INSTRUMENTATION=true
   ddev delete -Oy "${PROJNAME}" >/dev/null 2>&1 || true
@@ -36,6 +40,19 @@ setup() {
   assert_success
   run ddev start -y
   assert_success
+}
+
+prepare_host_codex_auth() {
+  mkdir -p "${HOME}/.codex"
+  if [ ! -e "${TEST_HOST_CODEX_AUTH}" ] && [ ! -L "${TEST_HOST_CODEX_AUTH}" ]; then
+    printf '{"ddev_assistant_codex_test":"%s"}\n' "${TEST_MARKER}" >"${TEST_HOST_CODEX_AUTH}"
+    export TEST_CREATED_CODEX_AUTH=true
+  fi
+}
+
+prepare_host_codex_config() {
+  prepare_host_codex_auth
+  printf 'seeded config from %s\n' "${TEST_MARKER}" >"${TEST_HOST_CODEX_MARKER}"
 }
 
 health_checks() {
@@ -72,9 +89,39 @@ health_checks() {
 
 }
 
+seed_mirror_checks() {
+  # Verify host config is mounted only in the seed area and copied into the
+  # writable runtime path.
+  run ddev exec "test -f ~/.cred-seed/codex/${TEST_MARKER}.txt"
+  assert_success
+
+  run ddev exec "test -f ~/.codex/${TEST_MARKER}.txt"
+  assert_success
+
+  run ddev exec "grep -F 'seeded config from ${TEST_MARKER}' ~/.cred-seed/codex/${TEST_MARKER}.txt"
+  assert_success
+
+  run ddev exec "grep -F 'seeded config from ${TEST_MARKER}' ~/.codex/${TEST_MARKER}.txt"
+  assert_success
+
+  # Verify restart-time mirroring deletes container-only files.
+  run ddev exec "touch ~/.codex/container-only-${TEST_MARKER}.txt"
+  assert_success
+
+  run ddev restart -y
+  assert_success
+
+  run ddev exec "test ! -e ~/.codex/container-only-${TEST_MARKER}.txt"
+  assert_success
+}
+
 teardown() {
   set -eu -o pipefail
   ddev delete -Oy "${PROJNAME}" >/dev/null 2>&1
+  rm -f "${TEST_HOST_CODEX_MARKER}"
+  if [ "${TEST_CREATED_CODEX_AUTH}" = true ]; then
+    rm -f "${TEST_HOST_CODEX_AUTH}"
+  fi
   # Persist TESTDIR if running inside GitHub Actions. Useful for uploading test result artifacts
   # See example at https://github.com/ddev/github-action-add-on-test#preserving-artifacts
   if [ -n "${GITHUB_ENV:-}" ]; then
@@ -87,17 +134,20 @@ teardown() {
 @test "install from directory" {
   set -eu -o pipefail
   echo "# ddev add-on get ${DIR} with project ${PROJNAME} in $(pwd)" >&3
+  prepare_host_codex_config
   run ddev add-on get "${DIR}"
   assert_success
   run ddev restart -y
   assert_success
   health_checks
+  seed_mirror_checks
 }
 
 # bats test_tags=release
 @test "install from release" {
   set -eu -o pipefail
   echo "# ddev add-on get ${GITHUB_REPO} with project ${PROJNAME} in $(pwd)" >&3
+  prepare_host_codex_auth
   run ddev add-on get "${GITHUB_REPO}"
   assert_success
   run ddev restart -y
