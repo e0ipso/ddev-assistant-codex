@@ -1,14 +1,28 @@
 #ddev-generated
 hooks:
   pre-start:
-    # Ensure host-side Codex paths exist so Docker bind-mounts them as the
-    # correct type (file vs directory). If a file does not exist, Docker would
-    # create a directory at that path instead, breaking the mount.
-    - exec-host: "mkdir -p ~/.codex"
+    # Ensure host-side Codex seed paths exist so Docker bind-mounts them as the
+    # correct type. If a file path is missing, Docker would create a directory
+    # at that path instead, breaking the seed.
+    - exec-host: >-
+        mkdir -p ~/.codex &&
+        if [ -e ~/.codex/auth.json ] && [ ! -f ~/.codex/auth.json ]; then
+          echo "~/.codex/auth.json exists but is not a file" >&2;
+          exit 1;
+        fi &&
+        [ -f ~/.codex/auth.json ] || : > ~/.codex/auth.json
   post-start:
-    # Fix ownership of bind-mounted directories — Docker creates the parent
-    # directory as root, which prevents Codex from writing to it.
-    - exec: "[ -d ~/.codex ] && sudo chown $(id -u):$(id -g) ~/.codex || true"
+    # Seed host Codex config into a writable runtime config directory without
+    # overwriting files that Codex has already changed inside the container.
+    - exec: >-
+        mkdir -p "$HOME/.codex" &&
+        if [ -d "$HOME/.cred-seed/codex" ]; then
+          cp -Rn "$HOME/.cred-seed/codex/." "$HOME/.codex/";
+        fi &&
+        sudo chown -R "$(id -u):$(id -g)" "$HOME/.codex" &&
+        if [ -f "$HOME/.codex/auth.json" ]; then
+          chmod 600 "$HOME/.codex/auth.json";
+        fi
 
 web_environment:
   - CODEX_CONFIG_DIR=$HOME/.codex

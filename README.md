@@ -12,7 +12,7 @@ ddev add-ons install ddev-assistant-codex
 
 - Installs @openai/codex CLI
 - Configures MCP servers (Puppeteer by default)
-- Fixes configuration directory ownership
+- Seeds host Codex config into a writable container runtime directory
 
 ## Quick Start
 
@@ -24,6 +24,18 @@ ddev exec codex mcp list
 ```
 
 ## Configuration
+
+### Codex Credentials And Runtime Config
+
+The add-on mounts your host `~/.codex` directory into the web container as a
+read-only seed at `~/.cred-seed/codex`. During container startup, missing files
+from that seed are copied into the writable runtime config directory at
+`~/.codex`, and `CODEX_CONFIG_DIR` points Codex there.
+
+This lets Codex start from your host credentials and settings while still
+allowing in-container token refreshes and config changes. Runtime files can
+drift from the host after startup. The seed is copied again only for missing
+files or fresh runtime state, so existing runtime changes are not overwritten.
 
 ### Custom MCP Servers
 

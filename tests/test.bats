@@ -47,10 +47,28 @@ health_checks() {
   run ddev exec "codex --version"
   assert_success
 
-  # Verify mounted config directory is owned by the web user (not root)
+  # Verify host Codex config is mounted as a read-only seed.
+  run ddev exec "test -d ~/.cred-seed/codex"
+  assert_success
+
+  run ddev exec "test -f ~/.cred-seed/codex/auth.json"
+  assert_success
+
+  # Verify runtime Codex config is seeded from the host config.
+  run ddev exec "test -f ~/.codex/auth.json"
+  assert_success
+
+  # Verify runtime config directory is owned by the web user (not root).
   run ddev exec "stat -c '%U' ~/.codex"
   assert_success
   refute_output "root"
+
+  # Verify runtime config is writable by the web user.
+  run ddev exec "test -w ~/.codex"
+  assert_success
+
+  run ddev exec "printf '{\"test\":\"writable\"}\n' > ~/.codex/auth.json"
+  assert_success
 
 }
 
