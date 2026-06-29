@@ -1,12 +1,11 @@
 #ddev-generated
-# Mount Codex CLI host configuration into the web container so that `codex`
-# inside the container shares the same global config, settings, and cache
-# as the host user's Codex installation.
-# The pre-start hook in config.ddev-assistant-codex.yaml ensures all host paths exist
-# as the correct type (file vs directory) before Docker attempts to bind-mount them.
-# Without that hook, Docker would create a directory at any missing file path,
-# silently breaking the mount instead of raising an error.
+# Mount the host Codex CLI configuration as a read-only seed. The post-start
+# hook copies missing files into a writable runtime ~/.codex directory so Codex
+# can refresh tokens and update in-container config without mutating the host
+# files or being blocked by a read-only bind mount.
+# The pre-start hook in config.ddev-assistant-codex.yaml ensures host seed paths
+# exist as the correct type before Docker attempts to bind-mount them.
 services:
   web:
     volumes:
-      - "${HOME}/.codex:${HOME}/.codex:cached"
+      - "${HOME}/.codex:${HOME}/.cred-seed/codex:ro"
